@@ -1,13 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/api/local-sync/:match*",
-      "destination": "https://audiowave-4e3t.onrender.com/api/local-sync/:match*"
-    },
-    {
-      "source": "/api/auth/:match*",
-      "destination": "https://audiowave-4e3t.onrender.com/api/auth/:match*"
-    },
+
     {
       "source": "/api/:match*",
       "destination": "https://sparklines-backend.vercel.app/:match*"

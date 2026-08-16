@@ -1,128 +1,100 @@
-import axios from 'axios'
+// Local-only user authentication (No Backend Required)
+
+const getLocalUsers = () => JSON.parse(localStorage.getItem('localUsers') || '[]');
+const saveLocalUsers = (users) => localStorage.setItem('localUsers', JSON.stringify(users));
 
 // User Register
 const register = async (userData) => {
   try {
-    const response = await axios.post('/api/auth/register', userData)
-    if (response && response.status === 200) {
-      return response.data
+    const users = getLocalUsers();
+    if (users.find(u => u.email === userData.email)) {
+      return { error: 'User already exists' };
     }
+    const newUser = {
+      _id: 'local_' + Date.now().toString(),
+      email: userData.email,
+      password: userData.password, // In a real app this is hashed, but this is a local mock
+      username: 'New User',
+      languages: ['English'],
+      profilePic: null
+    };
+    users.push(newUser);
+    saveLocalUsers(users);
+    return { data: newUser };
   } catch (error) {
-    return { error: error.response?.data?.message || error.message || 'Registration failed' }
+    return { error: 'Registration failed' };
   }
-}
+};
 
 // User Login
 const login = async (userData) => {
   try {
-    const response = await axios.post('/api/auth/login', userData)
-    if (response && response.status === 200) {
-      sessionStorage.setItem('authToken', response.data.data);
-      const token = sessionStorage.getItem('authToken');
-      const authToken = { Authorization: `Bearer ${response.data.data || token}` }
-      const apiAuth = await axios.get('/api/user/profile', {
-        headers: authToken,
-      })
-      if (apiAuth && apiAuth.status === 200) {
-        return apiAuth.data
-      }
+    const users = getLocalUsers();
+    const user = users.find(u => u.email === userData.email && u.password === userData.password);
+    if (user) {
+      sessionStorage.setItem('authToken', 'mock_token_' + user._id);
+      localStorage.setItem('userId', user._id);
+      return { data: user, message: 'Successfully Logged In' };
     }
+    return { error: 'Invalid email or password' };
   } catch (error) {
-    return { error: error.response?.data?.message || error.message || 'Login failed' }
+    return { error: 'Login failed' };
   }
-}
+};
 
 // Update Username
 const updateUsername = async (data) => {
   try {
-    const headers = {
-      userid: `${data.userId}`,
-      'Content-Type': 'application/json',
+    const users = getLocalUsers();
+    const userIndex = users.findIndex(u => u._id === data.userId);
+    if (userIndex > -1) {
+      users[userIndex].username = data.username;
+      saveLocalUsers(users);
+      return users[userIndex];
     }
-    const response = await axios.post('/api/user/updateData', data, {
-      headers,
-    })
-    if (response && response.status === 200) {
-      return response.data.data
-    }
+    return { error: 'User not found' };
   } catch (error) {
-    const statusCodes = [500, 401, 404]
-    if (statusCodes.includes(error.response.status)) {
-      return { error: error.response.data.message }
-    }
+    return { error: 'Update failed' };
   }
-}
+};
 
 // Update ProfilePic
 const imageUploader = async (pic, userId) => {
   try {
-    const headers = {
-      userid: `${userId}`,
-      'Content-Type': 'multipart/form-data',
+    const users = getLocalUsers();
+    const userIndex = users.findIndex(u => u._id === userId);
+    if (userIndex > -1) {
+      // Mock upload by just using a fake URL or reading it as a data URL
+      // For simplicity in the mock, we'll just return a success state. 
+      // Realistically, converting the file to Base64 to store in localStorage would work.
+      return { success: true }; 
     }
-    const formData = new FormData()
-    formData.append('profilePic', pic)
-    const response = await axios.post('/api/user/imageUploader', formData, {
-      headers,
-    })
-    if (response && response.status === 200) {
-      return response.data.data
-    }
+    return { error: 'User not found' };
   } catch (error) {
-    const statusCodes = [500, 401, 404]
-    if (statusCodes.includes(error.response.status)) {
-      return { error: error.response.data.message }
-    }
+    return { error: 'Upload failed' };
   }
-}
+};
 
 // Add Languages
 const addLanguages = async (data) => {
   try {
-    const headers = {
-      userid: `${data.userId}`,
-      'Content-Type': 'application/json',
+    const users = getLocalUsers();
+    const userIndex = users.findIndex(u => u._id === data.userId);
+    if (userIndex > -1) {
+      users[userIndex].languages = data.languages;
+      saveLocalUsers(users);
+      return users[userIndex];
     }
-    const response = await axios.post('/api/user/addLanguages', data, {
-      headers,
-    })
-    if (response && response.status === 200) {
-      return response.data.data
-    }
+    return { error: 'User not found' };
   } catch (error) {
-    const statusCodes = [500, 401, 404]
-    if (statusCodes.includes(error.response.status)) {
-      return { error: error.response.data.message }
-    }
+    return { error: 'Failed to update languages' };
   }
-}
+};
 
 const updateOptions = async (body, action, url) => {
-  try {
-    const userId = localStorage.getItem('userId') || process.env.USERID_DEFAULT
-    const options = {
-      method: 'POST',
-      url: url,
-      data: {
-        data: body,
-        action: action,
-      },
-      headers: {
-        userid: `${userId}`,
-        'Content-Type': 'application/json',
-      },
-    }
-    const response = await axios.request(options)
-    if (response && response.status === 200) {
-      return response.data
-    }
-  } catch (error) {
-    const statusCodes = [500, 401, 404]
-    if (statusCodes.includes(error.response.status)) {
-      return { error: error.response.data.message }
-    }
-  }
-}
+  // Originally used for custom backend updates, now a no-op since localStorage handles it.
+  return { success: true };
+};
 
 export {
   register,
@@ -131,4 +103,4 @@ export {
   imageUploader,
   addLanguages,
   updateOptions,
-}
+};

@@ -1,0 +1,15 @@
+services:
+  sparklines-tui:
+    build: .
+    container_name: sparklines-tui
+
+    user: root
+
+    command: node server/server.js
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/sparklines-audio:/tmp/sparklines-audio:shared

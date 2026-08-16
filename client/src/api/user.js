@@ -13,14 +13,14 @@ const register = async (userData) => {
     const newUser = {
       _id: [...Array(24)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
       email: userData.email,
-      password: userData.password, // In a real app this is hashed, but this is a local mock
+      password: userData.password, 
       username: 'New User',
       languages: ['English'],
       profilePic: null
     };
     users.push(newUser);
     saveLocalUsers(users);
-    return { data: newUser };
+    return { data: { ...newUser, userId: newUser._id } };
   } catch (error) {
     return { error: 'Registration failed' };
   }
@@ -34,7 +34,7 @@ const login = async (userData) => {
     if (user) {
       sessionStorage.setItem('authToken', 'mock_token_' + user._id);
       localStorage.setItem('userId', user._id);
-      return { data: user, message: 'Successfully Logged In' };
+      return { data: { ...user, userId: user._id }, message: 'Successfully Logged In' };
     }
     return { error: 'Invalid email or password' };
   } catch (error) {

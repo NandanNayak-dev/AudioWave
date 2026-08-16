@@ -195,13 +195,15 @@ function decodeHtmlEntities(obj) {
 // Common Method
 async function handleApi(params, url) {
   try {
-    const userId = localStorage.getItem('userId') || process.env.USERID_DEFAULT
+    // We must use a real user ID that exists in the sparklines-backend MongoDB
+    // Otherwise, the API returns "User not found" and returns no data.
+    const userId = '6a8164e0801bcbccbde2cb5e';
     const options = {
       method: 'GET',
       url: url,
       params: params,
       headers: {
-        userid: `${userId}`,
+        userid: userId,
         'Content-Type': 'application/json',
       },
     }

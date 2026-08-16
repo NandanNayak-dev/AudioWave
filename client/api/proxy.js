@@ -22,8 +22,14 @@ export default async function handler(req, res) {
     const queryString = urlParams.toString();
     const url = `https://sparklines-backend.vercel.app/${pathString}${queryString ? '?' + queryString : ''}`;
 
+    let providedUserId = req.headers.userid;
+    let validUserId = '507f1f77bcf86cd799439011'; // Default fallback
+    if (providedUserId && typeof providedUserId === 'string' && /^[0-9a-fA-F]{24}$/.test(providedUserId)) {
+      validUserId = providedUserId;
+    }
+
     const headers = {
-      'userid': req.headers.userid || '507f1f77bcf86cd799439011', // Fallback to a valid objectId just in case
+      'userid': validUserId,
       'Origin': 'https://sparklines.vercel.app',
       'Referer': 'https://sparklines.vercel.app/',
       'Content-Type': 'application/json'

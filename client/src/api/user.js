@@ -11,7 +11,7 @@ const register = async (userData) => {
       return { error: 'User already exists' };
     }
     const newUser = {
-      _id: 'local_' + Date.now().toString(),
+      _id: [...Array(24)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
       email: userData.email,
       password: userData.password, // In a real app this is hashed, but this is a local mock
       username: 'New User',

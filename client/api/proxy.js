@@ -1,35 +1,49 @@
 export default async function handler(req, res) {
-  const { path } = req.query;
-  
-  // Reconstruct the destination URL
-  // path will be an array if it matches multiple segments, so join it
-  const pathString = Array.isArray(path) ? path.join('/') : (path || '');
-  
-  // Extract query string if any exist
-  const urlParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(req.query)) {
-    if (key !== 'path') {
-      urlParams.append(key, value);
-    }
+  // CORS Headers for the browser
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, userid');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
   }
-  
-  const queryString = urlParams.toString();
-  const url = `https://sparklines-backend.vercel.app/${pathString}${queryString ? '?' + queryString : ''}`;
 
   try {
+    const { path } = req.query;
+    const pathString = Array.isArray(path) ? path.join('/') : (path || '');
+    
+    const urlParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(req.query)) {
+      if (key !== 'path') urlParams.append(key, value);
+    }
+    
+    const queryString = urlParams.toString();
+    const url = `https://sparklines-backend.vercel.app/${pathString}${queryString ? '?' + queryString : ''}`;
+
+    const headers = {
+      'userid': req.headers.userid || '507f1f77bcf86cd799439011', // Fallback to a valid objectId just in case
+      'Origin': 'https://sparklines.vercel.app',
+      'Referer': 'https://sparklines.vercel.app/',
+      'Content-Type': 'application/json'
+    };
+
     const response = await fetch(url, {
       method: req.method,
-      headers: {
-        'userid': req.headers.userid || '',
-        'Origin': 'https://sparklines.vercel.app',
-        'Referer': 'https://sparklines.vercel.app/',
-        'Content-Type': 'application/json'
-      }
+      headers: headers,
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      return res.status(response.status).json({ error: 'Invalid JSON', raw: text });
+    }
+
     res.status(response.status).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to proxy request' });
+    res.status(500).json({ error: 'Failed to proxy request', details: error.message });
   }
 }

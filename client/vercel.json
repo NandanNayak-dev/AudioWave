@@ -2,8 +2,8 @@
   "rewrites": [
 
     {
-      "source": "/api/:match*",
-      "destination": "https://sparklines-backend.vercel.app/:match*"
+      "source": "/api/:path*",
+      "destination": "/api/proxy"
     },
     {
       "source": "/(.*)",

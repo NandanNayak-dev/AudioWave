@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/local-sync/:match*",
+      "destination": "https://audiowave-backend.onrender.com/api/local-sync/:match*"
+    },
+    {
+      "source": "/api/:match*",
+      "destination": "https://sparklines-backend.vercel.app/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

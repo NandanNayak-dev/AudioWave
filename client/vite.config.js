@@ -12,6 +12,10 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+      '/api/auth': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'https://sparklines-backend.vercel.app',
         changeOrigin: true,

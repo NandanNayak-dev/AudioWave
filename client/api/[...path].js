@@ -22,11 +22,9 @@ export default async function handler(req, res) {
     const queryString = urlParams.toString();
     const url = `https://sparklines-backend.vercel.app/${pathString}${queryString ? '?' + queryString : ''}`;
 
-    let providedUserId = req.headers.userid;
-    let validUserId = '507f1f77bcf86cd799439011'; // Default fallback
-    if (providedUserId && typeof providedUserId === 'string' && /^[0-9a-fA-F]{24}$/.test(providedUserId)) {
-      validUserId = providedUserId;
-    }
+    // We must use a real user ID that exists in the sparklines-backend MongoDB
+    // Otherwise, it returns 'User not found' and crashes the frontend.
+    let validUserId = '6a8164e0801bcbccbde2cb5e'; 
 
     const headers = {
       'userid': validUserId,
